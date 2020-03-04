@@ -1,0 +1,3 @@
+[submodule "moodle_plugin_uploadfiletocourse"]
+	path = moodle_plugin_uploadfiletocourse
+	url = https://github.com/AlexDelPab/moodle_plugin_uploadfiletocourse.git

@@ -1,0 +1,49 @@
+version: '2.1'
+
+services:
+  db:
+    restart: always
+    image: postgres:11
+    volumes:
+      - ./postgresdata:/var/lib/postgressql/data/pgdata
+    container_name: db
+    environment:
+      - POSTGRES_USER=moodleuser
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=moodle
+      - PGDATA=/var/lib/postgressql/data/pgdata
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U moodleuser -d moodle"]
+        timeout: 5s
+        retries: 5
+    networks:
+        moodle_network:
+            ipv4_address: 172.28.0.2
+  moodle:
+    build: ./moodle-docker
+    volumes:
+      - ./moodle-docker/moodledata:/var/www/moodledata
+      - ./moodle-docker/moodle:/var/www/html/moodle
+    container_name: moodle
+    depends_on:
+        db:
+            condition: service_healthy
+    environment:
+      - DB_TYPE=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=moodle
+      - DB_USER=moodleuser
+      - DB_PASS=password
+      - DATA_ROOT=/var/www/moodledata
+      - WWW_ROOT=172.28.0.3
+    networks:
+        moodle_network:
+            ipv4_address: 172.28.0.3
+
+networks:
+    moodle_network:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.28.0.0/16
